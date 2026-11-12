@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Bump "5a" on every deploy: Safari otherwise reuses cached modules next to new HTML. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "./config.js": "./config.js?v=5a",
+      "./js/main.js": "./js/main.js?v=5a",
+      "./js/stage.js": "./js/stage.js?v=5a",
+      "./js/util.js": "./js/util.js?v=5a",
+      "./js/pixel.js": "./js/pixel.js?v=5a",
+      "./js/particles.js": "./js/particles.js?v=5a",
+      "./js/ascii.js": "./js/ascii.js?v=5a",
+      "./js/bloom.js": "./js/bloom.js?v=5a",
+      "./js/bouquet.js": "./js/bouquet.js?v=5a",
+      "./js/flowers.js": "./js/flowers.js?v=5a",
+      "./js/landing.js": "./js/landing.js?v=5a",
+      "./js/burn.js": "./js/burn.js?v=5a",
+      "./js/gift.js": "./js/gift.js?v=5a",
+      "./js/light.js": "./js/light.js?v=5a",
+      "./js/iris.js": "./js/iris.js?v=5a",
+      "./js/finale.js": "./js/finale.js?v=5a",
+      "./js/audio.js": "./js/audio.js?v=5a"
+    }
+  }
+  </script>
+  <!-- Core styles inline with literal values: the page colour Safari samples for its bars, and
+       controls that can never fall back to default buttons, even if styles.css is late or stale. -->
+  <style id="core">
+    html, body { margin: 0; background: #0B0A0D; color: #F3EDE4; }
+    .controls { position: fixed; z-index: 40; top: calc(env(safe-area-inset-top, 0px) + 6px); right: calc(env(safe-area-inset-right, 0px) + 8px); display: flex; gap: 4px; }
+    .ctl { -webkit-appearance: none; appearance: none; width: 44px; height: 44px; margin: 0; padding: 0; border: 0; border-radius: 12px; background: transparent; color: #9C948C; display: grid; place-items: center; cursor: pointer; }
+    .ctl svg { display: block; }
+    .ctl .ic-alt { display: none; }
+    .ctl[aria-pressed="true"] .ic-main { display: none; }
+    .ctl[aria-pressed="true"] .ic-alt { display: block; }
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0B0A0D">
+  <meta name="robots" content="noindex">
+  <title>a gift for you ♡</title>
+  <meta name="description" content="Someone sent you something ♡">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="a gift for you ♡">
+  <meta property="og:description" content="Someone sent you something. Open it ♡">
+  <meta property="og:image" content="assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap">
+  <link rel="stylesheet" href="styles.css?v=5a">
+</head>
+<body data-scene="landing">
+  <div id="safe" aria-hidden="true"></div>
+  <div id="frame" aria-hidden="true"></div>
+  <canvas id="bloom" class="layer" aria-hidden="true"></canvas>
+
+  <main>
+    <section id="landing" class="scene is-active" aria-labelledby="title">
+      <div class="landing">
+        <div class="landing__msg">
+          <canvas id="giftIcon" class="gift-icon" width="18" height="20" aria-hidden="true"></canvas>
+          <h1 class="title" id="title">You have received a gift from <em>Pipip</em>.</h1>
+        </div>
+        <div class="landing__ask">
+          <p class="sub" id="sub">
+            <span class="sub__text" id="subText" aria-hidden="true"></span>
+            <span class="sr-only" id="subLive" aria-live="polite"></span>
+          </p>
+          <div class="choices" id="choices">
+            <button class="btn btn--no" id="btnNo" type="button">No</button>
+            <button class="btn btn--yes" id="btnYes" type="button" aria-describedby="yesHint">
+              <span class="btn__label">Yes</span>
+              <span class="ribbon" aria-hidden="true"></span>
+            </button>
+          </div>
+          <p class="hold-hint" id="yesHint">hold Yes to untie the ribbon</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- The gift is drawn on the fx canvas; this layer catches taps and carries the hint. -->
+    <section id="gift" class="scene" aria-label="Opening the gift">
+      <p class="hint" id="giftHint"></p>
+    </section>
+
+    <section id="finale" class="scene" aria-label="Your bouquet">
+      <div class="dock" id="dock" data-state="unread">
+        <p class="plant-hint" id="plantHint"></p>
+        <div class="dock__secondary">
+          <button class="link" id="saveBtn" type="button"></button>
+          <span class="dock__sep" aria-hidden="true">·</span>
+          <button class="link" id="replayBtn" type="button"></button>
+        </div>
+        <div class="dock__primary">
+          <button class="chip" id="letterChip" type="button" aria-haspopup="dialog">
+            <canvas class="seal" width="7" height="6" aria-hidden="true"></canvas>
+            <span class="chip__txt"><span id="chipTitle"></span><small id="chipMeta"></small></span>
+          </button>
+          <a class="reply" id="replyBtn" href="#" target="_blank" rel="noopener"></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="letter" id="letter" aria-labelledby="letterHead">
+    <div class="paper" id="paper">
+      <p class="paper__head" id="letterHead"><canvas class="seal" width="7" height="6" aria-hidden="true"></canvas><span>for you</span></p>
+      <p class="msg" id="letterMsg"></p>
+      <p class="sig" id="letterSig"></p>
+      <button class="close" id="letterClose" type="button">close</button>
+    </div>
+  </dialog>
+
+  <canvas id="fx" class="layer" aria-hidden="true"></canvas>
+
+  <div class="controls" role="group" aria-label="Sound and motion">
+    <button class="ctl" id="motion" type="button" aria-label="Pause animation" aria-pressed="false">
+      <svg class="ic-main" width="21" height="21" viewBox="0 0 7 7" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="M1 1h2v5H1zM4 1h2v5H4z"/></svg>
+      <svg class="ic-alt" width="21" height="21" viewBox="0 0 7 7" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="M1 1h2v5H1zM3 2h1v3H3zM4 3h1v1H4z"/></svg>
+    </button>
+    <button class="ctl" id="mute" type="button" aria-label="Mute sound" aria-pressed="false">
+      <svg class="ic-main" width="21" height="21" viewBox="0 0 7 7" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="M0 2h1v3H0zM1 1h1v5H1zM2 0h1v7H2zM4 2h1v3H4zM6 1h1v5H6z"/></svg>
+      <svg class="ic-alt" width="21" height="21" viewBox="0 0 7 7" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="M0 2h1v3H0zM1 1h1v5H1zM2 0h1v7H2zM4 2h1v1H4zM6 2h1v1H6zM5 3h1v1H5zM4 4h1v1H4zM6 4h1v1H6z"/></svg>
+    </button>
+  </div>
+
+  <audio id="music" preload="auto" playsinline loop></audio>
+  <div class="fps" id="fps" hidden></div>
+
+  <noscript><p class="noscript">This little gift needs JavaScript turned on ♡</p></noscript>
+  <script type="module" src="js/main.js?v=5a"></script>
+</body>
+</html>
